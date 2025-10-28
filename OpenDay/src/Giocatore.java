@@ -17,6 +17,10 @@ class Giocatore implements Serializable {
     public int getPunteggio() { return punteggio; }
     public long getTimestamp() { return timestamp; }
 
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public void setPunteggio(int punteggio) {
         this.punteggio = punteggio;
         this.timestamp = System.currentTimeMillis(); // Aggiorna il timestamp
