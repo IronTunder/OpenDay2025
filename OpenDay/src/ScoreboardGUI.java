@@ -18,20 +18,21 @@ public class ScoreboardGUI extends JFrame {
     private JTable table;
     private SerialPort port;
     private Scanner data;
-    private String currentPlayer = "Giocatore";
+    private String currentPlayer = "Giocatore"; // IMPORTANTE: inizializza con un nome default
     private int currentScore = 0;
 
-    private final Color BACKGROUND_COLOR = new Color(245, 245, 255); // Lavanda chiaro
-    private final Color HEADER_COLOR = new Color(147, 112, 219); // Viola pastello
-    private final Color ROW_COLOR_1 = new Color(240, 248, 255); // Alice blue
-    private final Color ROW_COLOR_2 = new Color(230, 230, 250); // Lavanda
-    private final Color ACCENT_COLOR = new Color(100, 149, 237); // Blu pastello
-    private final Color TEXT_COLOR = new Color(72, 61, 139); // Viola scuro
-    private final Color GOLD_COLOR = new Color(255, 215, 0); // Oro
-    private final Color SILVER_COLOR = new Color(192, 192, 192); // Argento
-    private final Color BRONZE_COLOR = new Color(205, 127, 50); // Bronzo
+    private final Color BACKGROUND_COLOR = new Color(245, 245, 255);
+    private final Color HEADER_COLOR = new Color(147, 112, 219);
+    private final Color ROW_COLOR_1 = new Color(240, 248, 255);
+    private final Color ROW_COLOR_2 = new Color(230, 230, 250);
+    private final Color ACCENT_COLOR = new Color(100, 149, 237);
+    private final Color TEXT_COLOR = new Color(72, 61, 139);
+    private final Color GOLD_COLOR = new Color(255, 215, 0);
+    private final Color SILVER_COLOR = new Color(192, 192, 192);
+    private final Color BRONZE_COLOR = new Color(205, 127, 50);
 
     private Color buttonTextColor;
+    private volatile boolean serialConnected = false;
 
     public ScoreboardGUI() {
         classifica = Database.caricaClassifica();
@@ -42,14 +43,11 @@ public class ScoreboardGUI extends JFrame {
     }
 
     private void determineButtonTextColor() {
-
         Color background = UIManager.getColor("Panel.background");
         if (background == null) {
             background = BACKGROUND_COLOR;
         }
-
         double luminance = (0.299 * background.getRed() + 0.587 * background.getGreen() + 0.114 * background.getBlue()) / 255;
-
         buttonTextColor = luminance > 0.5 ? Color.BLACK : Color.WHITE;
     }
 
@@ -66,7 +64,6 @@ public class ScoreboardGUI extends JFrame {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
-
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 return String.class;
@@ -88,7 +85,6 @@ public class ScoreboardGUI extends JFrame {
         add(controlPanel, BorderLayout.SOUTH);
 
         aggiornaTabellaClassifica();
-
         setVisible(true);
     }
 
@@ -99,7 +95,7 @@ public class ScoreboardGUI extends JFrame {
 
         JTableHeader header = table.getTableHeader();
         header.setBackground(HEADER_COLOR);
-        header.setForeground(Color.WHITE);
+        header.setForeground(Color.BLACK);
         header.setFont(headerFont);
         header.setBorder(BorderFactory.createRaisedBevelBorder());
 
@@ -266,75 +262,120 @@ public class ScoreboardGUI extends JFrame {
     private void setupSerialConnection() {
         new Thread(() -> {
             try {
-                port = SerialPort.getCommPort("COM3"); // TODO: CAMBIA PORTA
+                // Prova diverse porte COM automaticamente
+                SerialPort[] ports = SerialPort.getCommPorts();
+                port = null;
+
+                for (SerialPort p : ports) {
+                    System.out.println("Trovata porta: " + p.getSystemPortName());
+                    if (p.getSystemPortName().startsWith("COM") ||
+                            p.getSystemPortName().startsWith("/dev/")) {
+                        port = p;
+                        break;
+                    }
+                }
+
+                if (port == null) {
+                    System.err.println("Nessuna porta seriale trovata!");
+                    JOptionPane.showMessageDialog(this,
+                            "Nessuna porta seriale trovata!\nAssicurati che Arduino sia collegato.",
+                            "Errore Connessione",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 port.setBaudRate(9600);
+                port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 1000, 0);
 
                 if (port.openPort()) {
-                    System.out.println("Porta seriale aperta con successo");
+                    System.out.println("Porta seriale aperta con successo su " + port.getSystemPortName());
+                    serialConnected = true;
                     data = new Scanner(port.getInputStream());
                     readSerialData();
                 } else {
-                    showErrorDialog("Errore nell'apertura della porta seriale!");
+                    System.err.println("Errore nell'apertura della porta seriale " + port.getSystemPortName());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                showErrorDialog("Errore di connessione: " + e.getMessage());
+                System.err.println("Errore di connessione: " + e.getMessage());
+                JOptionPane.showMessageDialog(this,
+                        "Errore di connessione seriale: " + e.getMessage(),
+                        "Errore Connessione",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }).start();
     }
 
-    private void showErrorDialog(String message) {
-        SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(this,
-                    message,
-                    "Errore",
-                    JOptionPane.ERROR_MESSAGE);
-        });
-    }
-
     private void readSerialData() {
-        int bestLevel = 0;
+        System.out.println("Thread di lettura seriale avviato...");
 
-        while (data != null && data.hasNextLine()) {
+        while (serialConnected && port != null && port.isOpen()) {
             try {
-                String line = data.nextLine().trim();
-                if (line.startsWith("{")) {
-                    JSONObject obj = new JSONObject(line);
-                    String event = obj.getString("event");
+                if (data.hasNextLine()) {
+                    String line = data.nextLine().trim();
+                    System.out.println("Dati ricevuti: " + line); // DEBUG
 
-                    switch (event) {
-                        case "level":
-                            int lvl = obj.getInt("value");
-                            System.out.println("Livello: " + lvl);
-                            break;
-
-                        case "correct":
-                            currentScore = obj.getInt("value");
-                            System.out.println("Sequenza corretta! Livello " + currentScore);
-                            break;
-
-                        case "error":
-                            int errorLevel = obj.getInt("value");
-                            System.out.println("Errore! Hai perso al livello " + errorLevel);
-                            aggiornaClassifica(currentPlayer, errorLevel);
-                            currentScore = 0;
-                            break;
-
-                        case "gameover":
-                            bestLevel = obj.getInt("value");
-                            System.out.println("Game over! Miglior livello: " + bestLevel);
-                            aggiornaClassifica(currentPlayer, bestLevel);
-                            currentScore = 0;
-                            break;
+                    if (line.startsWith("{")) {
+                        processJSONData(line);
                     }
+                } else {
+                    Thread.sleep(100);
                 }
             } catch (Exception e) {
-                System.err.println("Errore nella lettura dei dati seriali: " + e.getMessage());
+                System.err.println("Errore nella lettura seriale: " + e.getMessage());
+                try { Thread.sleep(1000); } catch (InterruptedException ie) {}
             }
+        }
+        System.out.println("Thread di lettura seriale terminato");
+    }
+
+    private void processJSONData(String jsonLine) {
+        try {
+            JSONObject obj = new JSONObject(jsonLine);
+            String event = obj.getString("event");
+            int value = obj.getInt("value");
+
+            System.out.println("Evento ricevuto: " + event + " - Valore: " + value); // DEBUG
+
+            switch (event) {
+                case "level":
+                    System.out.println("Livello: " + value);
+                    break;
+
+                case "correct":
+                    currentScore = value;
+                    System.out.println("Sequenza corretta! Livello " + currentScore);
+                    break;
+
+                case "error":
+                    System.out.println("Errore! Hai perso al livello " + value);
+                    // Usa il livello al momento dell'errore come punteggio
+                    aggiornaClassifica(currentPlayer, value);
+                    currentScore = 0;
+                    break;
+
+                case "gameover":
+                    System.out.println("Game over! Miglior livello: " + value);
+                    // Usa il miglior livello come punteggio
+                    aggiornaClassifica(currentPlayer, value);
+                    currentScore = 0;
+                    break;
+
+                default:
+                    System.out.println("Evento sconosciuto: " + event);
+            }
+        } catch (Exception e) {
+            System.err.println("Errore nel processing JSON: " + e.getMessage() + " - JSON: " + jsonLine);
         }
     }
 
     private void aggiornaClassifica(String nome, int punteggio) {
+        if (nome == null || nome.trim().isEmpty()) {
+            System.err.println("Nome giocatore vuoto! Usando 'Giocatore'");
+            nome = "Giocatore";
+        }
+
+        System.out.println("Aggiornamento classifica per: " + nome + " - Punteggio: " + punteggio);
+
         boolean giocatoreTrovato = false;
 
         for (Giocatore g : classifica) {
@@ -342,6 +383,8 @@ public class ScoreboardGUI extends JFrame {
                 if (punteggio > g.getPunteggio()) {
                     g.setPunteggio(punteggio);
                     System.out.println("Punteggio aggiornato per " + nome + ": " + punteggio);
+                } else {
+                    System.out.println("Punteggio non migliorato per " + nome + " (" + punteggio + " <= " + g.getPunteggio() + ")");
                 }
                 giocatoreTrovato = true;
                 break;
@@ -353,6 +396,7 @@ public class ScoreboardGUI extends JFrame {
             System.out.println("Nuovo giocatore aggiunto: " + nome + " con punteggio: " + punteggio);
         }
 
+        // Ordina la classifica
         Collections.sort(classifica, (g1, g2) -> {
             int scoreCompare = Integer.compare(g2.getPunteggio(), g1.getPunteggio());
             if (scoreCompare == 0) {
@@ -361,10 +405,11 @@ public class ScoreboardGUI extends JFrame {
             return scoreCompare;
         });
 
+        // Salva e aggiorna GUI
         Database.salvaClassifica(classifica);
-
         aggiornaTabellaClassifica();
 
+        // Mostra notifica
         if (punteggio > 0) {
             showScoreNotification(nome, punteggio);
         }
@@ -382,18 +427,16 @@ public class ScoreboardGUI extends JFrame {
     private void aggiornaTabellaClassifica() {
         SwingUtilities.invokeLater(() -> {
             tableModel.setRowCount(0);
-
             for (int i = 0; i < classifica.size(); i++) {
                 Giocatore g = classifica.get(i);
-                String posizione = getPositionText(i);
-
                 tableModel.addRow(new Object[]{
-                        posizione,
+                        getPositionText(i),
                         g.getNome(),
                         String.valueOf(g.getPunteggio()),
                         new java.util.Date(g.getTimestamp()).toString()
                 });
             }
+            System.out.println("Tabella aggiornata con " + classifica.size() + " giocatori"); // DEBUG
         });
     }
 
@@ -425,6 +468,7 @@ public class ScoreboardGUI extends JFrame {
     }
 
     public void close() {
+        serialConnected = false;
         if (data != null) {
             data.close();
         }
