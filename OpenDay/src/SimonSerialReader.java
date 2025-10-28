@@ -24,7 +24,7 @@ public class SimonSerialReader {
                         break;
                     case "correct":
                         int current = obj.getInt("value");
-                        if (current > bestLevel) bestLevel = current;
+                        //current : livello attuale
                         System.out.println("Sequenza corretta! Livello " + current);
                         break;
                     case "error":
