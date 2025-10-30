@@ -91,7 +91,6 @@ public class InterfacciaGrafica extends JFrame {
         try {
             java.io.File file = new java.io.File(path);
             if (!file.exists()) {
-                // Prova percorso alternativo
                 file = new java.io.File("./" + path);
                 if (!file.exists()) {
                     System.err.println("File non trovato: " + path);
@@ -103,7 +102,6 @@ public class InterfacciaGrafica extends JFrame {
             System.out.println("Icona caricata: " + path + " - Dimensioni originali: " +
                     originalIcon.getIconWidth() + "x" + originalIcon.getIconHeight());
 
-            // Ridimensiona solo se necessario
             if (originalIcon.getIconWidth() > width || originalIcon.getIconHeight() > height) {
                 Image resizedImage = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
                 return new ImageIcon(resizedImage);

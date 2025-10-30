@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Database {
     private static final String FILE_NAME = "classifica.dat";

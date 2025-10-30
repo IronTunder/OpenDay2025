@@ -17,14 +17,12 @@ public class SerialReaderThread extends Thread {
 
     @Override
     public void run() {
-        // Lista porte disponibili
         SerialPort[] ports = SerialPort.getCommPorts();
         System.out.println("Porte seriali disponibili:");
         for (SerialPort p : ports) {
             System.out.println("Port: " + p.getSystemPortName() + " - " + p.getDescriptivePortName());
         }
 
-        // Configura porta seriale
         serialPort = SerialPort.getCommPort("COM3");
         serialPort.setBaudRate(9600);
         serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 1000, 0);
@@ -49,7 +47,7 @@ public class SerialReaderThread extends Thread {
                 while ((line = reader.readLine()) != null && running) {
                     line = line.trim();
                     if (line.isEmpty()) continue;
-                    System.out.println("Dato ricevuto: " + line); // Debug
+                    System.out.println("Dato ricevuto: " + line);
 
                     try {
                         int val = Integer.parseInt(line);

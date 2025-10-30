@@ -5,7 +5,7 @@ class Giocatore implements Serializable {
 
     private String nome;
     private int punteggio;
-    private long timestamp; // Aggiungiamo un timestamp per tracciare quando è stato fatto il punteggio
+    private long timestamp;
 
     public Giocatore(String nome, int punteggio) {
         this.nome = nome;
@@ -23,7 +23,7 @@ class Giocatore implements Serializable {
 
     public void setPunteggio(int punteggio) {
         this.punteggio = punteggio;
-        this.timestamp = System.currentTimeMillis(); // Aggiorna il timestamp
+        this.timestamp = System.currentTimeMillis();
     }
 
     @Override
