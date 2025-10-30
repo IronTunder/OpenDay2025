@@ -83,7 +83,7 @@ void resetCompleto() {
 }
 
 void sorteggia() {
-  delay(1000);
+  delay(500);
   int nuovo_led = random(0, 4);
   seq[livello] = nuovo_led;
   livello++;
@@ -147,10 +147,11 @@ void spegniTuttiLed() {
 
 void vittoria() {
   spegniTuttiLed();
+  delay(400);
   for (int j = 0; j < 3; j++) {
     for (int i = 0; i < 4; i++) {
       digitalWrite(led[i], HIGH);
-      tone(buzzer, note[i], 100);
+      tone(buzzer, 400 , 100);
     }
     delay(200);
     spegniTuttiLed();

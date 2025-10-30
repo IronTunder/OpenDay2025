@@ -23,7 +23,7 @@ public class SerialReaderThread extends Thread {
             System.out.println("Port: " + p.getSystemPortName() + " - " + p.getDescriptivePortName());
         }
 
-        serialPort = SerialPort.getCommPort("COM3");
+        serialPort = SerialPort.getCommPort("COM10");
         serialPort.setBaudRate(9600);
         serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 1000, 0);
 

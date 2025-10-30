@@ -17,8 +17,6 @@ public class InterfacciaGrafica extends JFrame {
     private JLabel statusLabel;
     private int punteggioCorrente = 0;
 
-    static GraphicsDevice device = GraphicsEnvironment
-            .getLocalGraphicsEnvironment().getScreenDevices()[0];
 
     private final Color COLOR_PRIMARIO = new Color(173, 216, 230);
     private final Color COLOR_SECONDARIO = new Color(240, 248, 255);
@@ -38,8 +36,8 @@ public class InterfacciaGrafica extends JFrame {
     public InterfacciaGrafica() {
         setTitle("Classifica Simon Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        device.setFullScreenWindow(this);
         setLocationRelativeTo(null);
+        setSize(new Dimension(500,500));
 
         caricaIcone();
 
