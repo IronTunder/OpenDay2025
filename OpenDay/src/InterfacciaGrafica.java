@@ -1,4 +1,3 @@
-// InterfacciaGrafica.java
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -21,14 +20,12 @@ public class InterfacciaGrafica extends JFrame {
     static GraphicsDevice device = GraphicsEnvironment
             .getLocalGraphicsEnvironment().getScreenDevices()[0];
 
-    // Colori pastello
-    private final Color COLOR_PRIMARIO = new Color(173, 216, 230); // Azzurro pastello
-    private final Color COLOR_SECONDARIO = new Color(240, 248, 255); // Alice blue
-    private final Color COLOR_ACCENTO = new Color(221, 160, 221); // Prugna pastello
-    private final Color COLOR_TESTO = new Color(70, 70, 70); // Grigio scuro
-    private final Color COLOR_HEADER = new Color(176, 224, 230); // Polvere blu
+    private final Color COLOR_PRIMARIO = new Color(173, 216, 230);
+    private final Color COLOR_SECONDARIO = new Color(240, 248, 255);
+    private final Color COLOR_ACCENTO = new Color(221, 160, 221);
+    private final Color COLOR_TESTO = new Color(70, 70, 70);
+    private final Color COLOR_HEADER = new Color(176, 224, 230);
 
-    // Icone - Puoi caricare le tue immagini qui
     private Icon iconaPosizione1;
     private Icon iconaPosizione2;
     private Icon iconaPosizione3;
@@ -44,17 +41,14 @@ public class InterfacciaGrafica extends JFrame {
         device.setFullScreenWindow(this);
         setLocationRelativeTo(null);
 
-        // Carica le icone (sostituisci con i tuoi file)
         caricaIcone();
 
-        // Imposta look and feel moderno
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // Carica classifica esistente
         classifica = Database.caricaClassifica();
 
         initializeComponents();
@@ -74,10 +68,9 @@ public class InterfacciaGrafica extends JFrame {
 
     private void caricaIcone() {
         try {
-            // Dimensioni consigliate per le icone
-            int iconSizeSmall = 16;  // Per icone nelle celle
-            int iconSizeMedium = 20; // Per icone posizione
-            int iconSizeLarge = 24;  // Per icona titolo
+            int iconSizeSmall = 16;
+            int iconSizeMedium = 20;
+            int iconSizeLarge = 24;
 
             iconaPosizione1 = loadAndResizeIcon("icons/trofeo_oro.png", iconSizeMedium, iconSizeMedium);
             iconaPosizione2 = loadAndResizeIcon("icons/trofeo_argento.png", iconSizeMedium, iconSizeMedium);
@@ -87,8 +80,6 @@ public class InterfacciaGrafica extends JFrame {
             iconaGiocatore = loadAndResizeIcon("icons/giocatore.png", iconSizeSmall, iconSizeSmall);
             iconaCalendario = loadAndResizeIcon("icons/calendario.png", iconSizeSmall, iconSizeSmall);
             iconaTrofeo = loadAndResizeIcon("icons/trofeo.png", iconSizeLarge, iconSizeLarge);
-
-            // Verifica che tutte le icone siano state caricate
             verificaIconeCaricate();
 
         } catch (Exception e) {
@@ -143,23 +134,14 @@ public class InterfacciaGrafica extends JFrame {
 
 
     private void initializeComponents() {
-        // Layout principale con sfondo gradiente
         setLayout(new BorderLayout());
         getContentPane().setBackground(COLOR_SECONDARIO);
-
-        // Header con titolo
         JPanel headerPanel = createHeaderPanel();
         add(headerPanel, BorderLayout.NORTH);
-
-        // Tabella classifica
         JPanel tablePanel = createTablePanel();
         add(tablePanel, BorderLayout.CENTER);
-
-        // Pannello status
         JPanel statusPanel = createStatusPanel();
         add(statusPanel, BorderLayout.SOUTH);
-
-        // Aggiorna tabella iniziale
         aggiornaTabella();
     }
 
@@ -208,8 +190,6 @@ public class InterfacciaGrafica extends JFrame {
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBackground(COLOR_SECONDARIO);
         tablePanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
-
-        // Tabella classifica con icone nelle colonne
         String[] columnNames = {"Posizione", "Giocatore", "Punteggio", "Data"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -238,14 +218,12 @@ public class InterfacciaGrafica extends JFrame {
             }
         };
 
-        // Styling della tabella
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         table.setRowHeight(35);
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setBorder(BorderFactory.createEmptyBorder());
 
-        // Header della tabella con icone
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(COLOR_HEADER);
         table.getTableHeader().setForeground(COLOR_TESTO);
@@ -254,13 +232,11 @@ public class InterfacciaGrafica extends JFrame {
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
         ));
 
-        // Dimensioni colonne
         table.getColumnModel().getColumn(0).setPreferredWidth(100);
         table.getColumnModel().getColumn(1).setPreferredWidth(200);
         table.getColumnModel().getColumn(2).setPreferredWidth(120);
         table.getColumnModel().getColumn(3).setPreferredWidth(250);
 
-        // Renderer personalizzati per le colonne con icone
         table.getColumnModel().getColumn(0).setCellRenderer(new IconCellRenderer(true));
         table.getColumnModel().getColumn(1).setCellRenderer(new IconCellRenderer(false));
         table.getColumnModel().getColumn(2).setCellRenderer(new IconCellRenderer(true));
@@ -278,7 +254,6 @@ public class InterfacciaGrafica extends JFrame {
         return tablePanel;
     }
 
-    // Renderer personalizzato per celle con icone
     private class IconCellRenderer extends DefaultTableCellRenderer {
         private final boolean centerAlign;
 
@@ -299,7 +274,6 @@ public class InterfacciaGrafica extends JFrame {
                 setHorizontalAlignment(LEFT);
             }
 
-            // Aggiungi icone basate sul contenuto della cella
             if (value != null) {
                 String text = value.toString();
                 if (text.startsWith("1°") && column == 0) {
@@ -335,13 +309,11 @@ public class InterfacciaGrafica extends JFrame {
         statusPanel.setBackground(COLOR_SECONDARIO);
         statusPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 20, 30));
 
-        // Label di status
         statusLabel = new JLabel("Pronto per la partita - Inserisci il nome quando richiesto", JLabel.CENTER);
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         statusLabel.setForeground(COLOR_TESTO);
         statusLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 
-        // Pannello informazioni
         JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
         infoPanel.setBackground(COLOR_SECONDARIO);
 
@@ -395,7 +367,6 @@ public class InterfacciaGrafica extends JFrame {
     }
 
     private void chiediNomeGiocatore() {
-        // Custom dialog con styling
         JDialog dialog = new JDialog(this, "Nuovo Giocatore", true);
         dialog.setLayout(new BorderLayout());
         dialog.setSize(400, 200);
@@ -425,7 +396,7 @@ public class InterfacciaGrafica extends JFrame {
         JButton okButton = new JButton("Inizia");
         okButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         okButton.setBackground(COLOR_PRIMARIO);
-        okButton.setForeground(Color.WHITE);
+        okButton.setForeground(Color.BLACK);
         okButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         okButton.setFocusPainted(false);
 
@@ -460,8 +431,6 @@ public class InterfacciaGrafica extends JFrame {
 
     private void aggiungiGiocatore(String nome, int punteggio, boolean aggiornaRealtime) {
         Giocatore giocatore = new Giocatore(nome, punteggio);
-
-        // Cerca se il giocatore esiste già
         int index = -1;
         for (int i = 0; i < classifica.size(); i++) {
             if (classifica.get(i).getNome().equals(nome)) {
@@ -471,34 +440,27 @@ public class InterfacciaGrafica extends JFrame {
         }
 
         if (index != -1) {
-            // Giocatore esistente: aggiorna solo se il punteggio è migliore
             Giocatore esistente = classifica.get(index);
             if (punteggio > esistente.getPunteggio()) {
                 esistente.setPunteggio(punteggio);
                 esistente.setTimestamp(System.currentTimeMillis());
             }
         } else {
-            // Nuovo giocatore
             classifica.add(giocatore);
         }
 
-        // Ordina la classifica per punteggio decrescente
         classifica.sort((g1, g2) -> Integer.compare(g2.getPunteggio(), g1.getPunteggio()));
 
-        // Mantieni solo i top 10
         if (classifica.size() > 10) {
             classifica = new ArrayList<>(classifica.subList(0, 10));
         }
 
-        // Aggiorna la tabella in tempo reale
         aggiornaTabella();
 
-        // Salva solo se è un aggiornamento definitivo (game over)
         if (!aggiornaRealtime) {
             Database.salvaClassifica(classifica);
         }
 
-        // Aggiorna status
         if (punteggio > 0) {
             statusLabel.setText(nome + " - Nuovo punteggio: " + punteggio + " - Posizione in classifica: " + (getPosizioneGiocatore(nome) + 1));
         }
@@ -527,8 +489,6 @@ public class InterfacciaGrafica extends JFrame {
             };
             tableModel.addRow(rowData);
         }
-
-        // Forza l'aggiornamento visivo della tabella
         tableModel.fireTableDataChanged();
         table.repaint();
     }
@@ -563,7 +523,6 @@ public class InterfacciaGrafica extends JFrame {
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                // Migliora il rendering
                 System.setProperty("awt.useSystemAAFontSettings", "on");
                 System.setProperty("swing.aatext", "true");
             } catch (Exception e) {
